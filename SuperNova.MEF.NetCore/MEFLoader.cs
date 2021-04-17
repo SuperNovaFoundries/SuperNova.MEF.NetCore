@@ -84,13 +84,16 @@ namespace SuperNova.MEF.NetCore
 
         private static IEnumerable<PropertyInfo> GetPropertyInfo(Type type, List<PropertyInfo> list)
         {
-            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).ToList();
-            list.AddRange(properties);
+            list.AddRange(type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance));
 
             if (type.BaseType == null) return list;
             return GetPropertyInfo(type.BaseType, list);
         }
 
+        /// <summary>
+        /// Import all dependencies for properties that have an [Import] attribute.
+        /// </summary>
+        /// <param name="obj"></param>
         public static void SatisfyImportsOnce(object obj)
         {
             lock (_sync)
