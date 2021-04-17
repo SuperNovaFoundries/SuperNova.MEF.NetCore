@@ -12,6 +12,7 @@ phases:
       - echo "<CODEUBUILD_KMS_KEY_ID>"$CODEUBUILD_KMS_KEY_ID"</CODEUBUILD_KMS_KEY_ID>" >> buildinfo.xml
       - echo "</BuildInfo>" >> buildinfo.xml
       - a=$(aws secretsmanager get-secret-value --secret-id supernova/setup/nuget --query 'nuget' --output text)
+      - echo "key DEBUG : $a"
       - dotnet restore SuperNova.MEF.NetCore.sln
   build:
     commands:
