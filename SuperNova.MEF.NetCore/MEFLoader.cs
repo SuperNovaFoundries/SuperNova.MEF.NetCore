@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Common
+namespace SuperNova.MEF.NetCore
 {
     /// <summary>
     /// Set this to true for unit testing
@@ -75,26 +75,32 @@ namespace Common
                         {
                             throw ex;
                         }
-                        
+
                     }
                     _container = configuration.CreateContainer();
                 }
             }
         }
 
+        private static IEnumerable<PropertyInfo> GetPropertyInfo(Type type, List<PropertyInfo> list)
+        {
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).ToList();
+            list.AddRange(properties);
+
+            if (type.BaseType == null) return list;
+            return GetPropertyInfo(type.BaseType, list);
+        }
+
         public static void SatisfyImportsOnce(object obj)
         {
             lock (_sync)
             {
-                //var logger = _loggerFactory.GetLogger("MEFLoader::SatisfyImportsOnce");
                 if (!IsInitialized)
                 {
                     Init();
                 }
-                foreach (var property in obj.
-                    GetType().
-                    GetProperties(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).
-                    Where(prop => Attribute.IsDefined(prop, typeof(ImportAttribute))))
+
+                foreach (var property in GetPropertyInfo(obj.GetType(), new List<PropertyInfo>()).Where(prop => Attribute.IsDefined(prop, typeof(ImportAttribute))))
                 {
                     //check to see if we have a mocked object for this property
                     if (_mockedObjects.ContainsKey(property.PropertyType.ToString()))
