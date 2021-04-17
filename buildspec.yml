@@ -11,8 +11,7 @@ phases:
       - echo "<CODEBUILD_INITIATOR>"$CODEBUILD_INITIATOR"</CODEBUILD_INITIATOR>" >> buildinfo.xml
       - echo "<CODEUBUILD_KMS_KEY_ID>"$CODEUBUILD_KMS_KEY_ID"</CODEUBUILD_KMS_KEY_ID>" >> buildinfo.xml
       - echo "</BuildInfo>" >> buildinfo.xml
-      - a=$(aws secretsmanager get-secret-value --secret-id supernova/setup/nuget --output text)
-      - echo $a
+      - a=$(aws secretsmanager get-secret-value --secret-id supernova/setup/nuget --query 'SecretString' --output text)
       - dotnet restore SuperNova.MEF.NetCore.sln
   build:
     commands:
