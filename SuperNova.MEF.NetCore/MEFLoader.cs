@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Composition.Convention;
 using System.Composition.Hosting;
 using System.IO;
 using System.Linq;
@@ -51,12 +52,24 @@ namespace Common
                 {
                     var startTime = DateTime.UtcNow;
                     var assemblyList = Directory.GetFiles(_assemblyPath, "SuperNova*.dll");
+                    var rules = new ConventionBuilder();
                     var currentAssembly = Assembly.GetExecutingAssembly().GetName();
-                    foreach (var assembly in assemblyList)
+                    foreach (var a in assemblyList)
                     {
                         try
                         {
-                            configuration.WithAssembly(Assembly.LoadFrom(assembly));
+                            var assembly = Assembly.LoadFrom(a);
+
+                            var sharedExports = assembly
+                                .GetTypes()
+                                .Where(type => type.GetCustomAttribute<SharedAttribute>(true) is SharedAttribute)
+                                .ToList();
+                            foreach (var export in sharedExports)
+                            {
+                                rules.ForTypesDerivedFrom(export).Shared();
+                            }
+
+                            configuration.WithAssembly(assembly);
                         }
                         catch (Exception ex)
                         {
